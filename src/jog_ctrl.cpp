@@ -35,7 +35,8 @@
  *              Jack Shelata
  *              jack.shelata@external.comau.com
  *      Description: 
- *              Simple controller created to allow for basic eDO control in a command line interface.
+ *              Simple controller created to allow for basic eDO control in a
+ *              command line interface.
  */
 #include <ros/ros.h>
 #include "edo_core_msgs/MovementCommand.h"
@@ -51,7 +52,8 @@
 #include <queue>
 #include <string>
 #include <iomanip>    //Used to set precision of output to 2 decimal places
-#include <ncurses.h>	//Used in the jog function to allow for keystrokes to be captured without an enter press
+#include <ncurses.h>	//Used in the jog function to allow for keystrokes to
+                      //be captured without an enter press
 
 /*
 
@@ -71,9 +73,12 @@ TODO
 
   enum E_MOVE_COMMAND {
     E_MOVE_COMMAND_MOVE       = 'M', /* Execute a command statement */
-    E_MOVE_COMMAND_CANCEL     = 'C', /* cancella la move in esecuzione (se presente) */
-    E_MOVE_COMMAND_PAUSE      = 'P', /* mette in pausa la move in esecuzione (se presente) */
-    E_MOVE_COMMAND_RESUME     = 'R', /* avvia la move precedentemente messa in pausa (se presente) */
+    E_MOVE_COMMAND_CANCEL     = 'C', /* cancella la move in esecuzione
+                                        (se presente) */
+    E_MOVE_COMMAND_PAUSE      = 'P', /* mette in pausa la move in esecuzione
+                                        (se presente) */
+    E_MOVE_COMMAND_RESUME     = 'R', /* avvia la move precedentemente messa
+                                        in pausa (se presente) */
     E_MOVE_COMMAND_JOGMOVE    = 'J', /* Execute a JOG move */
     E_MOVE_COMMAND_JOGSTOP    = 'S'  /* Stop a JOG move */
   };
@@ -93,22 +98,26 @@ TODO
 //Declare createMove() function for use in MovementCommandQueue class
 edo_core_msgs::MovementCommand createMove(int type, int delay);
 
-//Structure to hold MovementCommand and MovementFeedback in the queue (same as in UI)
+//Structure to hold MovementCommand and MovementFeedback in the queue
+//(same as in UI)
 struct MovementCommandQueueItem {
 
 	edo_core_msgs::MovementCommand message;
 	edo_core_msgs::MovementFeedback status;
 };
 
-//Class to manage queues for received, executed, and pending commands. Mimics UI code found in ros.service.ts
+//Class to manage queues for received, executed, and pending commands.
+//Mimics UI code found in ros.service.ts
 class MovementCommandQueue {
 
 public:
 	//Class constructor takes in existing NodeHandle reference
 	MovementCommandQueue(ros::NodeHandle& nh_in) {
 		nh = nh_in;
-		move_ack_sub = nh.subscribe("/machine_movement_ack", 100, &MovementCommandQueue::moveAckCallback, this);
-		move_ctrl_pub = nh.advertise<edo_core_msgs::MovementCommand>("/bridge_move",10,true);
+		move_ack_sub = nh.subscribe("/machine_movement_ack", 100,
+        &MovementCommandQueue::moveAckCallback, this);
+		move_ctrl_pub = nh.advertise<edo_core_msgs::MovementCommand>("/bridge_move",
+        10,true);
 	}  //MovementCommandQueue()
 
 	//Function to publish command to "/bridge_move"
@@ -130,7 +139,8 @@ public:
 		pendingQueue.push(rosQueueItem);
 	}  //pushMoveCommand()
 	
-	//Callback function to manage queued commands based on MovementFeedback messages from "/machine_movement_ack"
+	//Callback function to manage queued commands based on MovementFeedback
+  //messages from "/machine_movement_ack"
 	//Mimics code found in ros.service.ts
 	void moveAckCallback(const edo_core_msgs::MovementFeedback& feedback){
 		switch(unsigned(feedback.type)){
@@ -176,7 +186,8 @@ public:
 	}  //moveAckCallback()
 
 	bool stillRunning(){
-		return !(pendingQueue.empty() && waitingReceiveQueue.empty() && waitingExecutedQueue.empty());
+		return !(pendingQueue.empty() && waitingReceiveQueue.empty() &&
+        waitingExecutedQueue.empty());
 	} //stillRunning()
 
 
@@ -194,12 +205,16 @@ private:
 class DataDisplay {
 	
 public:
-	//Constructor creates and initializes subscribers and bools for checking for completion
+	//Constructor creates and initializes subscribers and bools for checking
+  //for completion
 	DataDisplay(ros::NodeHandle& nh_in){
 		nh = nh_in;
-		cartesian_pose_sub = nh.subscribe("/cartesian_pose", 10, &DataDisplay::printPoseData, this);
-		machine_state_sub = nh.subscribe("/machine_state", 10, &DataDisplay::printState, this);
-		joint_pose_sub = nh.subscribe("machine_algo_jnt_state", 10, &DataDisplay::printJointPose, this);
+		cartesian_pose_sub = nh.subscribe("/cartesian_pose", 10,
+        &DataDisplay::printPoseData, this);
+		machine_state_sub = nh.subscribe("/machine_state", 10,
+        &DataDisplay::printState, this);
+		joint_pose_sub = nh.subscribe("machine_algo_jnt_state", 10,
+        &DataDisplay::printJointPose, this);
 		cartesianPrinted = false;
 		statePrinted = false;
 		jointPrinted = false;
@@ -254,14 +269,16 @@ private:
 
 };
 
-//Class to handle initial start of node, check state, and start calibration procedure if necessary
+//Class to handle initial start of node, check state, and start calibration
+//procedure if necessary
 class InitialCheck {
 
 public:
 	
 	InitialCheck(ros::NodeHandle& nh_in){
 		nh = nh_in;
-		machine_state_sub = nh.subscribe("/machine_state", 10, &InitialCheck::stateCallback, this);
+		machine_state_sub = nh.subscribe("/machine_state", 10,
+        &InitialCheck::stateCallback, this);
 		stateReceived = false;
 	}  //InitialCheck()
 
@@ -440,7 +457,8 @@ edo_core_msgs::MovementCommand createMove(int type, int delay){
 }  //createMove()
 
 //Function to carry out each button press jog command
-void jogHelper(edo_core_msgs::MovementCommand& msg, int joint_number, ros::Publisher& jog_ctrl_pub, ros::Rate& loop_rate, double velocity){	
+void jogHelper(edo_core_msgs::MovementCommand& msg, int joint_number,
+    ros::Publisher& jog_ctrl_pub, ros::Rate& loop_rate, double velocity){	
 	msg.target.joints_data.clear();			
 	msg.target.joints_data.resize(10,0.0);
 	if(joint_number > 0){
@@ -448,7 +466,8 @@ void jogHelper(edo_core_msgs::MovementCommand& msg, int joint_number, ros::Publi
 		msg.target.joints_data[joint_number - 1] = velocity;
 	}
 	else{
-    std::cout << "\rJoint " << -1 * joint_number << " - " << velocity << std::flush;
+    std::cout << "\rJoint " << -1 * joint_number << " - "
+              << velocity << std::flush;
 		msg.target.joints_data[(-1 * joint_number) - 1] = -1 * velocity;
 	}
 	jog_ctrl_pub.publish(msg);
@@ -456,17 +475,25 @@ void jogHelper(edo_core_msgs::MovementCommand& msg, int joint_number, ros::Publi
 	loop_rate.sleep();
 }  //jogHelper()
 
-//Function manages sending jog commands using ncurses library for push-button key capturing
+//Function manages sending jog commands using ncurses library for
+//push-button key capturing
 void jog(ros::NodeHandle& nh){
 
-	ros::Publisher jog_ctrl_pub = nh.advertise<edo_core_msgs::MovementCommand>("/bridge_jog",10);
+	ros::Publisher jog_ctrl_pub =
+    nh.advertise<edo_core_msgs::MovementCommand>("/bridge_jog",10);
 	ros::Rate loop_rate(100);
 	edo_core_msgs::MovementCommand msg = createJog();
 	char ch = '\n';
 
-	std::cout << "-----\nJog Controls:\nJoint 1 +/-: 'q'/'a'\nJoint 2 +/-: 'w'/'s'\n" 
-			<< "Joint 3 +/-: 'e'/'d'\nJoint 4 +/-: 'r'/'f'\n" 
-			<< "Joint 5 +/-: 't'/'g'\nJoint 6 +/-: 'y'/'h'\nSet Velocity +/-: 'u'/'j'\nExit: 'x'\n-----\n";
+	std::cout << "-----\nJog Controls:\n"
+      << "Joint 1 +/-: 'q'/'a'\n"
+      << "Joint 2 +/-: 'w'/'s'\n" 
+			<< "Joint 3 +/-: 'e'/'d'\n"
+      << "Joint 4 +/-: 'r'/'f'\n" 
+			<< "Joint 5 +/-: 't'/'g'\n"
+      << "Joint 6 +/-: 'y'/'h'\n"
+      << "Set Velocity +/-: 'u'/'j'\n"
+      << "Exit: 'x'\n-----\n";
 	while(ch != 'y'){
 		std::cout << "Enter 'y' to continue: ";
 		std::cin >> ch;
@@ -475,11 +502,13 @@ void jog(ros::NodeHandle& nh){
   bool last = false;
   double velocity = 1.0;
 	initscr();		//ncurses function initializes key capture
-	//timeout(0);		//ncurses function set to 0 forces getch() to return ERR when no key is pressed instead of waiting for key
+	//timeout(0);		//ncurses function set to 0 forces getch() to return
+  //ERR when no key is pressed instead of waiting for key
 	//curs_set(0);		//ncurses makes the cursor invisible
 	noecho();		//ncurses function hides pressed keys
 	do {
-		ch = getch();	//ncurses function returns char of key pressed; returns ERR when no key press
+		ch = getch();	//ncurses function returns char of key pressed
+                  //returns ERR when no key press
 		
 		//Switch decides which joint to move and which direction
 		//See above std::cout statements for details
@@ -573,7 +602,8 @@ void jog(ros::NodeHandle& nh){
         std::cout << "\rVelocity: " << velocity << std::flush;
         break;
 
-			//Default case handles delay when key is pressed since held down keys are not repeated immediately
+			//Default case handles delay when key is pressed since held down
+      //keys are not repeated immediately
 			default:
 				if(last){					
 					for(int i = 0; i < 40; ++i){
@@ -598,8 +628,11 @@ void move(ros::NodeHandle& nh){
 			
 	int anglesOrCartesian, numEntries = 0, delay = 0;
 			
-	std::cout << "Select move type:\n0 - joint movement to joint point\n1 - joint movement to cartesian point\n10 - cartesian movement to joint point\n"
-		 << "11 - cartesian movement to cartesian point\n";
+	std::cout << "Select move type:\n"
+            << "0 - joint movement to joint point\n"
+            << "1 - joint movement to cartesian point\n"
+            << "10 - cartesian movement to joint point\n"
+		        << "11 - cartesian movement to cartesian point\n";
 	std::cin >> anglesOrCartesian;
 	std::cout << "Enter number of entries: ";
 	std::cin >> numEntries;
@@ -655,7 +688,8 @@ void move(ros::NodeHandle& nh){
 //Function handles initial callibration
 void calibrate(ros::NodeHandle& nh, bool recalib){
 
-	ros::Publisher calib_pub = nh.advertise<edo_core_msgs::JointCalibration>("/bridge_jnt_calib",10);
+	ros::Publisher calib_pub =
+    nh.advertise<edo_core_msgs::JointCalibration>("/bridge_jnt_calib",10);
 	
 	ros::Rate loop_rate(100);
 
@@ -665,8 +699,10 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
 
   if(!recalib){
 
-    ros::Publisher reset_pub = nh.advertise<edo_core_msgs::JointReset>("/bridge_jnt_reset",10);
-  	ros::Publisher init_pub = nh.advertise<edo_core_msgs::JointInit>("/bridge_init",10);	
+    ros::Publisher reset_pub =
+      nh.advertise<edo_core_msgs::JointReset>("/bridge_jnt_reset",10);
+  	ros::Publisher init_pub =
+      nh.advertise<edo_core_msgs::JointInit>("/bridge_init",10);	
     
     edo_core_msgs::JointReset reset_msg;
 	  edo_core_msgs::JointInit init_msg;
@@ -681,7 +717,8 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
 	  loop_rate.sleep();
 	
 
-	  std::cout << "Wait at least 5 seconds...\nEnter 'y' to disengage brakes: ";
+	  std::cout << "Wait at least 5 seconds...\n"
+              << "Enter 'y' to disengage brakes: ";
 	  std::cin >> proceed;
 	  reset_msg.joints_mask = 63;
 	  reset_msg.disengage_steps = 2000;
@@ -691,8 +728,9 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
 	  loop_rate.sleep();
   }
 	
-	std::cout << "Calibration Procedure\n-----\nRotate joints so that each slot is aligned with its\n" 
-			<< "corresponding white mark\n";
+	std::cout << "Calibration Procedure\n-----\n"
+            << "Rotate joints so that each slot is aligned with its\n" 
+			      << "corresponding white mark\n";
 	std::cout << "Enter 'y' to enter JogMode and calibrate each joint: ";
 	std::cin >> proceed;
 	
@@ -710,7 +748,8 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
 //Function creates DataDisplay object and prints data at instant
 void getData(ros::NodeHandle& nh){
 	DataDisplay data(nh);
-	while(ros::ok() && !(data.getCartesianPrinted() && data.getStatePrinted() && data.getJointPrinted())){
+	while(ros::ok() && !(data.getCartesianPrinted() &&
+        data.getStatePrinted() && data.getJointPrinted())){
 		ros::spinOnce();
 	}  //while()
 }  //getData()
@@ -767,8 +806,9 @@ void initialStartup(ros::NodeHandle& nh){
   }  //switch(state)
 
 }  //initialStartup
-
-bool readFromFile(std::string filename/*, ros::NodeHandle& nh*/){
+/* Jack Shelata commented out 
+bool readFromFile(std::string filename*COMMENTED->,
+          ros::NodeHandle& nh<-COMMENTED*){
   // Create file stream in
   // Open file and check that it is open
   std::ifstream infile;
@@ -806,12 +846,12 @@ bool readFromFile(std::string filename/*, ros::NodeHandle& nh*/){
 
 
 
-  /*
+  *COMMENTED->
   std::vector<edo_core_msgs::MovementCommand>::iterator it = pointVec.begin();
 		while(it != pointVec.end()){
 			move_ctrl.pushMoveCommand(*it);
 			it++;
-    }*/
+    }<-COMMENTED*
 
   infile.close();
   if(infile.is_open()){
@@ -822,7 +862,7 @@ bool readFromFile(std::string filename/*, ros::NodeHandle& nh*/){
   return true;
 
 }  //readFromFile()
-
+*/
 int main(int argc, char **argv){
 	
 	ros::init(argc, argv, "jog_ctrl");
@@ -840,17 +880,27 @@ int main(int argc, char **argv){
 			~ In order to check, must create subscriber to grab a message
 			~ Once message has been grabbed, decide what state and what to do
 			~ Kill the subsciber
-		- If in calibrate state, should not require a calibration though calibration should remain and option
-		- If in error state, should restrict access to move/jog commands and provide useful output (and maybe quit node)
-		- If in init state, should force full calibration including init, reset, and calibrate
-		- Change calibrate to have two paths: One for initial calibration and one for re-calibration
-		- Find a way to force the user to pause between sending init command and reset command (and maybe jog/calibrate commands)
+		- If in calibrate state, should not require a calibration
+      though calibration should remain and option
+		- If in error state, should restrict access to move/jog
+      commands and provide useful output (and maybe quit node)
+		- If in init state, should force full calibration including
+      init, reset, and calibrate
+		- Change calibrate to have two paths: One for initial
+      calibration and one for re-calibration
+		- Find a way to force the user to pause between sending
+      init command and reset command (and maybe jog/calibrate commands)
 	*/
 	
 	int choice = 0;
 
 	do {
-		std::cout << "1 for jog control\n2 for move control\n3 to re-calibrate\n4 to print eDo data\n5 to read commands from .txt file\n-1 to exit: ";
+		std::cout << "1 for jog control\n"
+              << "2 for move control\n"
+              << "3 to re-calibrate\n"
+              << "4 to print eDo data\n"
+              << "5 to read commands from .txt file\n"
+              << "-1 to exit: ";
 		std::cin >> choice;
 
 		switch(choice){
@@ -869,30 +919,16 @@ int main(int argc, char **argv){
 		case 4:
 			getData(nh);
 			break;
+    /* Jack Shelata Commented Out
     case 5:
       std::string filename;
       std::cout << "\nPlease enter filename: ";
       std::cin >> filename; 
       readFromFile(filename);
       break;	    
-      
+    */  
 		} //switch(choice)
 	} while(choice != -1);
 
 	return 0;
 }
-			
-			
-		
-
-
-
-
-
-
-
-
-
-
-
-
