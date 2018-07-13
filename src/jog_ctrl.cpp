@@ -61,9 +61,7 @@ TODO
 
  - Continue to comment and organize
  - Force wait time in initial calibration
- - Make sure calibration is prompted at the beginning of the program
-    - Will likely have to create another class for this
- - Add re-calibrate option
+    * Will likely have to create another class for this
 
 */
 
@@ -501,10 +499,12 @@ void jog(ros::NodeHandle& nh){
 	ch = '\n';
   bool last = false;
   double velocity = 1.0;
-	initscr();		//ncurses function initializes key capture
-	//timeout(0);		//ncurses function set to 0 forces getch() to return
-  //ERR when no key is pressed instead of waiting for key
-	//curs_set(0);		//ncurses makes the cursor invisible
+  doupdate();   //ncurses function to reset window after endwin() has been
+                //called
+  initscr();		//ncurses function initializes key capture
+	timeout(0);		//ncurses function set to 0 forces getch() to return
+                //ERR when no key is pressed instead of waiting for key
+	curs_set(0);		//ncurses makes the cursor invisible
 	noecho();		//ncurses function hides pressed keys
 	do {
 		ch = getch();	//ncurses function returns char of key pressed
@@ -864,7 +864,9 @@ bool readFromFile(std::string filename*COMMENTED->,
 }  //readFromFile()
 */
 int main(int argc, char **argv){
-	
+
+  bool cursesActive = false;
+
 	ros::init(argc, argv, "jog_ctrl");
 
 	ros::NodeHandle nh;
@@ -876,18 +878,10 @@ int main(int argc, char **argv){
 		
 	/*
 	TODO for Initial Calibration
-		- When node is started, should check machine state
-			~ In order to check, must create subscriber to grab a message
-			~ Once message has been grabbed, decide what state and what to do
-			~ Kill the subsciber
-		- If in calibrate state, should not require a calibration
-      though calibration should remain and option
 		- If in error state, should restrict access to move/jog
       commands and provide useful output (and maybe quit node)
 		- If in init state, should force full calibration including
       init, reset, and calibrate
-		- Change calibrate to have two paths: One for initial
-      calibration and one for re-calibration
 		- Find a way to force the user to pause between sending
       init command and reset command (and maybe jog/calibrate commands)
 	*/
@@ -898,7 +892,7 @@ int main(int argc, char **argv){
 		std::cout << "1 for jog control\n"
               << "2 for move control\n"
               << "3 to re-calibrate\n"
-              << "4 to print eDo data\n"
+              << "4 to print eDO data\n"
               << "5 to read commands from .txt file\n"
               << "-1 to exit: ";
 		std::cin >> choice;
