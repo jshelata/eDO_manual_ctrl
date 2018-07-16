@@ -491,7 +491,9 @@ void jog(ros::NodeHandle& nh){
 			<< "Joint 5 +/-: 't'/'g'\n"
       << "Joint 6 +/-: 'y'/'h'\n"
       << "Set Velocity +/-: 'u'/'j'\n"
-      << "Exit: 'x'\n-----\n";
+      << "Exit: 'x'\n-----\n"
+      << "NOTE: VELOCITY STARTS AT 100%\n"
+      << "NOTE: EDO TRAVELS A SHORT DISTANCE FOLLOWING BUTTON RELEASE\n";
 	while(ch != 'y'){
 		std::cout << "Enter 'y' to continue: ";
 		std::cin >> ch;
@@ -730,7 +732,10 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
 	
 	std::cout << "Calibration Procedure\n-----\n"
             << "Rotate joints so that each slot is aligned with its\n" 
-			      << "corresponding white mark\n";
+			      << "corresponding white mark\nBE SURE TO MOVE AT LEAST ONE JOINT "
+            << "BACKWARDS AND FORWARDS A FEW DEGREES!\nIF YOU DO NOT "
+            << "THE EDO WILL NOT CALIBRATE CORRECTLY AND WILL NEED TO BE "
+            << "RESET!\n";
 	std::cout << "Enter 'y' to enter JogMode and calibrate each joint: ";
 	std::cin >> proceed;
 	
