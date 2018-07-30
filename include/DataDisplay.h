@@ -16,40 +16,43 @@
 **                Class(es) Definition
 ****************************************************************/
 
+/** @brief This class creates and stores ROS Subscribers to
+ *  output the e.DO's Cartesian Position, Machine State, and Joint Angle Data.
+ */
 class DataDisplay {
   
 public:
 
   // Constructor creates and initializes subscribers and bools for checking
   // for completion
-	DataDisplay(ros::NodeHandle& nh_in);
+  DataDisplay(ros::NodeHandle& nh_in);
 
-  // Callback function to print CartesianPose message	
-	void printPoseData(const edo_core_msgs::CartesianPose& pose);
+  // Callback function to print CartesianPose message 
+  void printPoseData(const edo_core_msgs::CartesianPose& pose);
 
   // Callback function to print MachineState message
-	void printState(const edo_core_msgs::MachineState& state);
+  void printState(const edo_core_msgs::MachineState& state);
 
   // Callback function to print JointStateArray message
-	void printJointPose(const edo_core_msgs::JointStateArray& pose);
+  void printJointPose(const edo_core_msgs::JointStateArray& pose);
 
   // Member function to tell whether cartesian data has been printed
-	bool getCartesianPrinted();
+  bool getCartesianPrinted();
 
   // Member function to tell whether cartesian data has been printed
-	bool getStatePrinted();
+  bool getStatePrinted();
 
   // Member function to tell whether joint data has been printed
-	bool getJointPrinted();
+  bool getJointPrinted();
 
 private:
 
   ros::NodeHandle nh;                                 // ROS Node Handle
-	ros::Subscriber cartesian_pose_sub;                 // ROS subscriber
-	ros::Subscriber machine_state_sub;                  // ROS subscriber
-	ros::Subscriber joint_pose_sub;                     // ROS subscriber
-	bool cartesianPrinted, statePrinted, jointPrinted;  // True when printed
-	
+  ros::Subscriber cartesian_pose_sub;                 // ROS subscriber
+  ros::Subscriber machine_state_sub;                  // ROS subscriber
+  ros::Subscriber joint_pose_sub;                     // ROS subscriber
+  bool cartesianPrinted, statePrinted, jointPrinted;  // True when printed
+  
 };
 
 

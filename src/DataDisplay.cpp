@@ -11,56 +11,89 @@
 **                Function(s) Definition
 ****************************************************************/
 
-// Constructor creates and initializes subscribers and bools for checking
-// for completion
+/** @brief Construct DataDisplay object. Constructor creates and initializes
+ *  subscribers and bools for checking for completion.
+ *  @param nh_in - ROS NodeHandle object by reference to create ROS Publishers
+ *  and Subscribers
+ *  @return DataDisplay object
+ *  @exception None
+ */
 DataDisplay::DataDisplay(ros::NodeHandle& nh_in){
-	nh = nh_in;
-	cartesian_pose_sub = nh.subscribe("/cartesian_pose", 10,
+  nh = nh_in;
+  cartesian_pose_sub = nh.subscribe("/cartesian_pose", 10,
       &DataDisplay::printPoseData, this);
-	machine_state_sub = nh.subscribe("/machine_state", 10,
+  machine_state_sub = nh.subscribe("/machine_state", 10,
       &DataDisplay::printState, this);
-	joint_pose_sub = nh.subscribe("machine_algo_jnt_state", 10,
+  joint_pose_sub = nh.subscribe("/machine_algo_jnt_state", 10,
       &DataDisplay::printJointPose, this);
-	cartesianPrinted = false;
-	statePrinted = false;
-	jointPrinted = false;
+  cartesianPrinted = false;
+  statePrinted = false;
+  jointPrinted = false;
 }  // DataDisplay::DataDisplay()
 
-// Callback function to print CartesianPose message	
+/** @brief Callback function to print CartesianPose message
+ *  @param pose - CartesianPose message type from "/cartesian_pose" ROS topic
+ *  @return void
+ *  @exception None
+ */
 void DataDisplay::printPoseData(const edo_core_msgs::CartesianPose& pose){
-	if(!cartesianPrinted){
-		std::cout << pose << "\n";
-		cartesianPrinted = true;
-	}
+  if(!cartesianPrinted){
+    std::cout << pose << "\n";
+    cartesianPrinted = true;
+  }
 }  // DataDisplay::printPoseData()
 
-// Callback function to print MachineState message
+/** @brief Callback function to print MachineState message
+ *  @param pose - MachineState message type from "/machine_state" ROS topic
+ *  @return void
+ *  @exception None
+ */
 void DataDisplay::printState(const edo_core_msgs::MachineState& state){
-	if(!statePrinted){
-		std::cout << state << "\n";
-		statePrinted = true;
-	}
+  if(!statePrinted){
+    std::cout << state << "\n";
+    statePrinted = true;
+  }
 }  // DataDisplay::printState()
 
-// Callback function to print JointStateArray message
+/** @brief Callback function to print JointStateArray message
+ *  @param pose - MachineState message type from "/machine_algo_jnt_state"
+ *  ROS topic
+ *  @return void
+ *  @exception None
+ */
 void DataDisplay::printJointPose(const edo_core_msgs::JointStateArray& pose){
-	if(!jointPrinted){
-		std::cout << pose << "\n";
-		jointPrinted = true;
-	}
+  if(!jointPrinted){
+    std::cout << pose << "\n";
+    jointPrinted = true;
+  }
 }  // DataDisplay::printJointPose()
 
-// Member function to tell whether cartesian data has been printed
+/** @brief Getter member function to tell whether cartesian data has been
+ *  printed
+ *  @param None 
+ *  @return bool - Value of cartesianPrinted (true if data was printed)
+ *  @exception None
+ */
 bool DataDisplay::getCartesianPrinted(){
-	return cartesianPrinted;
+  return cartesianPrinted;
 }  // DataDisplay::getCartesianPrinted()
 
-// Member function to tell whether machine state data has been printed
+/** @brief Getter member function to tell whether State data has been
+ *  printed
+ *  @param None 
+ *  @return bool - Value of statePrinted (true if data was printed)
+ *  @exception None
+ */
 bool DataDisplay::getStatePrinted(){
-	return statePrinted;
+  return statePrinted;
 }  // DataDisplay::getStatePrinted()
 
-// Member function to tell whether joint data has been printed
+/** @brief Getter member function to tell whether Joint data has been
+ *  printed
+ *  @param None 
+ *  @return bool - Value of jointPrinted (true if data was printed)
+ *  @exception None
+ */
 bool DataDisplay::getJointPrinted(){
-	return jointPrinted;
+  return jointPrinted;
 }  // DataDisplay::getJointPrinted()
