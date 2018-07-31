@@ -10,6 +10,8 @@ These instructions will get you a copy of the project up and running on your loc
 
 This package has only been run on the NVIDIA Jetson TX2 running Ubuntu 16.04 LTS and ROS Kinetic. In order to use the jog mode, the Ncurses library must be installed on your Linux machine.
 
+e.DO Software Version: TBD
+
 ### Installing
 
 Clone/save this repository into the "src" folder in a catkin workspace directory. Use catkin_make from your catkin workspace directory to build.
@@ -46,11 +48,24 @@ Run the node.
 ```
 rosrun edo_manual_ctrl edo_manual_ctrl
 ```
+#### LAN Connection
+
+If you prefer to access the e.DO over your own LAN using an Ethernet cable, you mush change the ROS_MASTER_URI and ROS_IP within the e.DO as well as on your own machine.
+
+Connect to e.DO via ssh using e.DO's IP on your LAN. NOTE: It may be helpful to reserve an IP on your router for the e.DO.
+```
+ssh edo@10.42.0.49
+```
+The e.DO's password is "raspberry".
+
+Next, you'll need to edit the "ministarter" file in the home directory. Change the IP address in lines 20 and 21 to e.DO's IP address on the LAN. Save and close the file and restart e.DO. Change the ROS_MASTER_URI as explained above to the new IP address and the ROS_IP to you machine's IP address on the LAN.
+
 
 ## Build Dependencies
 
 * [Ncurses](https://www.cyberciti.biz/faq/linux-install-ncurses-library-headers-on-debian-ubuntu-centos-fedora/) - Used for asynchronous jog control
 * [ROS Kinetic](http://wiki.ros.org/kinetic.Installation)
+* [eDO_core_msgs](https://github.com/Comau/eDO_core_msgs) - Rename to "edo_core_msgs" to build successfully
 * C++11 - Used to sleep to give time for e.DO to process commands
 
 

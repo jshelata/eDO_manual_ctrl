@@ -7,19 +7,20 @@
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="jack.shelata@external.comau.com">Jack Shelata</maintainer>
+  <maintainer email="jack@jackshelata.com">Jack Shelata</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>BSD</license>
+  <license>MIT</license>
 
 
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
   <!-- <url type="website">http://wiki.ros.org/edo_manual_ctrl</url> -->
+  <url type="website">https://github.com/jshelata/edo_manual_ctrl</url>
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -49,10 +50,10 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-	<build_depend>edo_core_msgs/MovementCommand</build_depend>
-	<build_depend>edo_core_msgs/MovementFeedback</build_depend>
-	<depend>roscpp</depend>
-	<depend>ncurses++</depend>
+  <build_depend>edo_core_msgs/MovementCommand</build_depend>
+  <build_depend>edo_core_msgs/MovementFeedback</build_depend>
+  <depend>roscpp</depend>
+  <depend>ncurses++</depend>
   <depend>rospy</depend>
   <!-- The export tag contains other, unspecified, tags -->
   <export>
