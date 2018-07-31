@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 This package has only been run on the NVIDIA Jetson TX2 running Ubuntu 16.04 LTS and ROS Kinetic. In order to use the jog mode, the Ncurses library must be installed on your Linux machine.
 
-e.DO Software Version: TBD
+e.DO Software Version: 2.1.0
 
 ### Installing
 
