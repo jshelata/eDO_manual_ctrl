@@ -1,6 +1,6 @@
 # e.DO Manual Control
 
-This is the Doxygen documentation for the "edo_manual_ctrl" ROS package that can be used to control the COMAU e.DO educational robot. It provides the ability to initialize, calibrate, and operate the e.DO from the Linux terminal without the use of the Android tablet application. The program supports jog and move commands and can output data from the e.DO to the terminal. It can be helpful in understanding how the e.DO Robot can be controlled by any ROS compatible program.
+This ROS package can be used to control the COMAU e.DO educational robot. It provides the ability to initialize, calibrate, and operate the e.DO from the Linux terminal without the use of the Android tablet application. The program supports jog and move commands and can output data from the e.DO to the terminal. It can be helpful in understanding how the e.DO Robot can be controlled by any ROS compatible program.
 
 ## Getting Started
 
@@ -18,7 +18,7 @@ Clone/save directory into src folder
 
 ```
 cd catkin_ws/src/
-git clone ...
+git clone https://github.com/jshelata/edo_manual_ctrl.git
 ```
 
 Build the package
@@ -28,17 +28,10 @@ cd catkin_ws
 catkin_make
 ```
 
-In order to run the program, connect to your e.DO's WiFi network.
-
-You must set the ROS_MASTER_URI of your machine to the e.DO's IP address.
+Connect to your e.DO's WiFi network and set the ROS_MASTER_URI of your machine to the e.DO's IP address and the ROS_IP to your machine's IP on the e.DO WiFi network. NOTE: You can also add these two lines to the bottom of your .bashrc in your home directory.
 
 ```
 export ROS_MASTER_URI=http://192.168.12.1:11311
-```
-
-Then set the ROS_IP of your machine to your own IP address on the e.DO's Wifi network.
-
-```
 export ROS_IP=192.168.12.68
 ```
 
@@ -48,16 +41,16 @@ Source your setup.bash file within your catkin workspace.
 source devel/setup.bash
 ```
 
-Run the node
+Run the node.
 
 ```
 rosrun edo_manual_ctrl edo_manual_ctrl
 ```
 
-
 ## Build Dependencies
 
 * [Ncurses](https://www.cyberciti.biz/faq/linux-install-ncurses-library-headers-on-debian-ubuntu-centos-fedora/) - Used for asynchronous jog control
+* [ROS Kinetic](http://wiki.ros.org/kinetic.Installation)
 * C++11 - Used to sleep to give time for e.DO to process commands
 
 
