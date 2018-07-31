@@ -1,7 +1,7 @@
 /** @file MovementCommandQueue.cpp
  *  @brief Class implementation for MovementCommandQueue. Used to send move
  *  commands to the e.DO with proper timing as the Tablet HMI does.
- *  @author Ashwini Magar, Jack Shelata, Alessandro Piscioneri
+ *  @author Jack Shelata
  *  @date May 28, 2018
  */
 

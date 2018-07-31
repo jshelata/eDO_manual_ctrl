@@ -1,6 +1,6 @@
 /** @file DataDisplay.h
  *  @brief Class definition for DataDisplay
- *  @author Ashwini Magar, Jack Shelata, Alessandro Piscioneri
+ *  @author Jack Shelata
  *  @date May 28, 2018
  */
 #ifndef __DATA_DISPLAY_H__

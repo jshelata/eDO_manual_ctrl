@@ -1,5 +1,10 @@
 /** @file edo_manual_ctrl.cpp
- *  @brief ROS node allows for e.DO to be controlled via Linux terminal.
+ *  @brief ROS node allows for e.DO to be controlled via Linux terminal. This
+ *  file and the classes that it uses were created to eliminate the e.DO's
+ *  dependency on its Android tablet application and allow it to be controlled
+ *  via Linux terminal. This node has all of the basic functionality provided
+ *  by the Android application and can be helpful in understanding how the e.DO
+ *  Robot can be controlled by any ROS compatible program.
  *  @author Jack Shelata
  *  @date May 28, 2018
  */
@@ -7,7 +12,7 @@
 
 #include "MovementCommandQueue.h"
 #include "DataDisplay.h"
-#include "InitialCheck.h"
+#include "StateChecker.h"
 
 #include "edo_core_msgs/MovementCommand.h"
 #include "edo_core_msgs/JointCalibration.h"
@@ -19,9 +24,17 @@
 #include <fstream>
 #include <queue>
 #include <string>
-#include <iomanip>    //Used to set precision of output to 2 decimal places
-#include <ncurses.h>  //Used in the jog function to allow for keystrokes to
-                      //be captured without an enter press
+#include <iomanip>    // Used to set precision of output to 2 decimal places
+#include <ncurses.h>  // Used in the jog function to allow for keystrokes to
+                      // be captured without an enter press
+
+/*  TODO
+ *    -Seperate Jog and Move into classes
+ *    -Fix calibrate and initialStartup
+ *    -Redesign DataDisplay
+ *      ~Make data more human-readable
+ *      ~Change class structure
+ */  
 
 /** @brief Function manages jog command creation. Fills in Jog type values
  *  and returns a message to be filled with velocity values on scale from
@@ -53,7 +66,7 @@ edo_core_msgs::MovementCommand createJog(){
 edo_core_msgs::MovementCommand createMove(int type, int delay){
   
   edo_core_msgs::MovementCommand msg;
-  //Joint movement to joint point
+  // Joint movement to joint point
   if(type == 0){
     msg.move_command = 77;
     msg.move_type = 74;
@@ -63,7 +76,7 @@ edo_core_msgs::MovementCommand createMove(int type, int delay){
     msg.target.joints_mask = 63;
     msg.target.joints_data.resize(6, 0.0);
   }
-  //Joint movement to cartesian point
+  // Joint movement to cartesian point
   else if(type == 1){
     msg.move_command = 77;
     msg.move_type = 74;
@@ -73,7 +86,7 @@ edo_core_msgs::MovementCommand createMove(int type, int delay){
     msg.target.joints_mask = 63;
     msg.target.joints_data.resize(10, 0.0);
   }
-  //Linear movement to joint point
+  // Linear movement to joint point
   else if(type == 10){
     msg.move_command = 77;
     msg.move_type = 76;
@@ -83,7 +96,7 @@ edo_core_msgs::MovementCommand createMove(int type, int delay){
     msg.target.joints_mask = 63;
     msg.target.joints_data.resize(6, 0.0);
   }
-  //Linear movement to cartesian point
+  // Linear movement to cartesian point
   else if(type == 11){
     msg.move_command = 77;
     msg.move_type = 76;
@@ -93,7 +106,7 @@ edo_core_msgs::MovementCommand createMove(int type, int delay){
     msg.target.joints_mask = 63;
     msg.target.joints_data.resize(10, 0.0);
   }
-  //Reset
+  // Reset
   else if(type == -1){
     msg.move_command = 67;
     msg.target.joints_data.clear();
@@ -137,12 +150,13 @@ void jogHelper(edo_core_msgs::MovementCommand& msg, int joint_number,
  */  
 void jog(ros::NodeHandle& nh){
 
+  ros::Rate loop_rate(100);
   ros::Publisher jog_ctrl_pub =
     nh.advertise<edo_core_msgs::MovementCommand>("/bridge_jog",10);
-  ros::Rate loop_rate(100);
   edo_core_msgs::MovementCommand msg = createJog();
-  char ch = '\n';
+  char ch = '\n';     // Char to hold keypress value (Ncurses)
 
+  // Output control information
   std::cout << "-----\nJog Controls (Press and Hold):\n"
       << "Joint 1 +/-: 'q'/'a'\n"
       << "Joint 2 +/-: 'w'/'s'\n" 
@@ -160,19 +174,18 @@ void jog(ros::NodeHandle& nh){
   ch = '\n';
   bool last = false;
   double velocity = 1.0;
-  doupdate();     //ncurses function to reset window after endwin() has been
-                  //called
-  initscr();      //ncurses function initializes key capture
-  timeout(0);     //ncurses function set to 0 forces getch() to return
-                  //ERR when no key is pressed instead of waiting for key
-  curs_set(0);    //ncurses makes the cursor invisible
-  noecho();       //ncurses function hides pressed keys
+  doupdate();     // Ncurses function to reset window after endwin() has been
+                  // called
+  initscr();      // Ncurses function initializes key capture
+  timeout(0);     // Ncurses function set to 0 forces getch() to return
+                  // ERR when no key is pressed instead of waiting for key
+  curs_set(0);    // Ncurses makes the cursor invisible
+  noecho();       // Ncurses function hides pressed keys
   do {
-    ch = getch(); //ncurses function returns char of key pressed
-                  //returns ERR when no key press
+    ch = getch(); // Ncurses function returns char of key pressed
+                  // returns ERR when no key press
     
-    //Switch decides which joint to move and which direction
-    //See above std::cout statements for details
+    // Switch decides which joint to move and which direction
     switch(ch) {
 
       case 'q':
@@ -263,9 +276,9 @@ void jog(ros::NodeHandle& nh){
         std::cout << "\rVelocity: " << velocity << std::flush;
         break;
       
-    }  //switch(choice)
+    }  // switch(choice)
   } while(ch != 'X' && ch != 'x');
-  endwin(); //Ends ncurses window
+  endwin(); // Ends ncurses window
 
 }  // jog()
 
@@ -278,8 +291,9 @@ void move(ros::NodeHandle& nh){
 
   MovementCommandQueue move_ctrl(nh);
       
-  int anglesOrCartesian, numEntries = 0, delay = 0;
-      
+  int anglesOrCartesian, numEntries = 0, delay = 0;   // Vars to save user input
+  
+  // Output control information
   std::cout << "Select move type:\n"
             << "0 - joint movement to joint point\n"
             << "1 - joint movement to cartesian point\n"
@@ -300,6 +314,7 @@ void move(ros::NodeHandle& nh){
   }
   std::vector<edo_core_msgs::MovementCommand> pointVec;
   
+  // Read each entry
   for(int i = 0; i < numEntries; ++i){
     edo_core_msgs::MovementCommand msg = createMove(anglesOrCartesian, delay);
     if(anglesOrCartesian == 0 || anglesOrCartesian == 10){
@@ -315,15 +330,19 @@ void move(ros::NodeHandle& nh){
       scanf("%f", &msg.target.cartesian_data.e);
       scanf("%f", &msg.target.cartesian_data.r);
     }
-    pointVec.push_back(msg);
+    pointVec.push_back(msg);        // Store all waypoints in vector
+                                    // to be executed
   }
-      
-  int numLoops = 1; 
-  std::cout << "Enter number of loops: ";
-  std::cin >> numLoops;
-
-      
-      
+  
+  int numLoops = 0;
+  while (numLoops < 1){
+    std::cout << "Enter number of loops: ";
+    std::cin >> numLoops;
+    if (numLoops < 1){
+      std::cout << "Number of loops must be at least 1.\n";
+    }
+  }  
+  // Push waypoints from vector to queue system in MoveCommandQueue class    
   for(int i = 0; i < numLoops; ++i){
     std::vector<edo_core_msgs::MovementCommand>::iterator it = pointVec.begin();
     while(it != pointVec.end()){
@@ -331,9 +350,9 @@ void move(ros::NodeHandle& nh){
       it++;
     }
   }
-  //While loop exits when move queue is done running
+  // While loop exits when move queue is done running
   while(ros::ok() && move_ctrl.stillRunning()){
-    ros::spinOnce();        
+    ros::spinOnce();
   }
 
 }  // move()
@@ -345,17 +364,40 @@ void move(ros::NodeHandle& nh){
  *  is being recalibrated so that initialization and reset are not repeated
  *  @return void
  *  @exception None
- */  
+ */
+/*  TODO
+ *    Change to the following:
+ *      -Create StateChecker
+ *      -Get state (switch)
+ *        case: Init (0)
+ *          Prompt User to send init message
+ *          Send init command until state becomes Braked (6)
+ *          (No break; continues to next case)
+ *        case: Braked (6)
+ *          Prompt user to send reset command
+ *          Send reset command until state becomes Not_Calibrate (1)
+ *          (No break; continues to next case)
+ *        case: Not_Calibrate (1)
+ *        case: Calibrate (2) (If user is calibrating again, will come here)
+ *          Explain how to calibrate
+ *          Call jog function
+ *          Prompt user to send calibrate command
+ *          Send calibrate command until state becomes Calibrate
+ *          (Watch ROS topics to see how state changes in Tablet recalibration)
+ *        default:
+ *          Output state and provide helpful information
+ */ 
 void calibrate(ros::NodeHandle& nh, bool recalib){
-
+  
   ros::Publisher calib_pub =
     nh.advertise<edo_core_msgs::JointCalibration>("/bridge_jnt_calib",10);
   
   ros::Rate loop_rate(100);
 
   edo_core_msgs::JointCalibration calib_msg;
+  std::chrono::milliseconds timespan(10000);   // To sleep program for 10 sec
 
-  char proceed;
+  char proceed = '\n';  // Char to allow user to control when commands are sent
 
   if(!recalib){
 
@@ -366,27 +408,38 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
     
     edo_core_msgs::JointReset reset_msg;
     edo_core_msgs::JointInit init_msg;
-
-    std::cout << "Enter 'y' to initialize 6-Axis eDO w/o gripper: ";
-    std::cin >> proceed;
+    while(proceed != 'y'){
+      std::cout << "Enter 'y' to initialize 6-Axis eDO w/o gripper: ";
+      std::cin >> proceed;
+    }
+    proceed = '\n';                             // Reset char for next prompt
     init_msg.mode = 0;
     init_msg.joints_mask = 63;
     init_msg.reduction_factor = 0.0;
+    while(init_pub.getNumSubscribers() == 0){
+      loop_rate.sleep();
+    }
     init_pub.publish(init_msg);
     ros::spinOnce();
     loop_rate.sleep();
   
-    std::chrono::milliseconds timespan(5000);
-    std::this_thread::sleep_for(timespan);
-    std::cout/* << "Wait at least 5 seconds...\n"*/
-              << "Enter 'y' to disengage brakes: ";
-    std::cin >> proceed;
+    std::this_thread::sleep_for(timespan);      // while e.DO initializes
+
+    while(proceed != 'y'){
+      std::cout << "Enter 'y' to disengage brakes: ";
+      std::cin >> proceed;
+    }  
+    proceed = '\n';                             // Reset char for next prompt
     reset_msg.joints_mask = 63;
     reset_msg.disengage_steps = 2000;
     reset_msg.disengage_offset = 3.5;
+    while(reset_pub.getNumSubscribers() == 0){
+      loop_rate.sleep();
+    }
     reset_pub.publish(reset_msg);
     ros::spinOnce();
     loop_rate.sleep();
+    std::this_thread::sleep_for(timespan);
   }
   
   std::cout << "Calibration Procedure\n-----\n"
@@ -395,19 +448,28 @@ void calibrate(ros::NodeHandle& nh, bool recalib){
             << "BACKWARDS AND FORWARDS A FEW DEGREES!\nIF YOU DO NOT "
             << "THE EDO WILL NOT CALIBRATE CORRECTLY AND WILL NEED TO BE "
             << "RESET!\n";
-  std::cout << "Enter 'y' to enter JogMode and calibrate each joint: ";
-  std::cin >> proceed;
+  while(proceed != 'y'){
+    std::cout << "Enter 'y' to enter JogMode and calibrate each joint: ";
+    std::cin >> proceed;
+  }  
+  proceed = '\n';         // Reset char for next prompt
   
   jog(nh);
   
-  std::cout << "Enter 'y' to send calibration command: ";
-  std::cin >> proceed;
+  while(proceed != 'y'){
+    std::cout << "Enter 'y' to send calibration command: ";
+    std::cin >> proceed;
+  }
+  proceed = '\n';  
   calib_msg.joints_mask = 63;
+  while(calib_pub.getNumSubscribers() == 0){
+    loop_rate.sleep();
+  }
   calib_pub.publish(calib_msg);
   ros::spinOnce();
   loop_rate.sleep();
-  
-}  //calibrate()
+  std::this_thread::sleep_for(timespan);
+}  // calibrate()
 
 /** @brief Function creates DataDisplay object and prints data at instant
  *  @param nh - ROS NodeHandle to pass to DataDisplay class constructor for
@@ -420,7 +482,7 @@ void getData(ros::NodeHandle& nh){
   while(ros::ok() && !(data.getCartesianPrinted() &&
         data.getStatePrinted() && data.getJointPrinted())){
     ros::spinOnce();
-  }  //while()
+  }  // while()
 }  // getData()
 
 /** @brief Function to handle initial startup
@@ -429,80 +491,98 @@ void getData(ros::NodeHandle& nh){
  *  @return void
  *  @exception None
  */
-void initialStartup(ros::NodeHandle& nh){
+/*  TODO
+ *    -Once calibrate todo is complete, remove this function
+ */    
+bool initialStartup(ros::NodeHandle& nh){
   ros::Rate loop_rate(100);
-  InitialCheck check(nh);
-  while(!check.getStateReceived()){
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  int state = check.getState();
-  switch(state){
+  StateChecker check(nh);
+  char option = 'y';
+  do{ 
+    while(!check.getStateReceived()){
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    int state = check.getState();
+    switch(state){
 
-    case 0:
-      std::cout << "eDO is in state INIT.\nLaunching calibration...\n";
-      calibrate(nh, false);
-      break;
-  
-    case 1:
-      std::cout << "eDO is in state NOT_CALIBRATE.\nLaunching calibration...\n";
-      calibrate(nh, false);
-      break;
-
-    case 2:
-      std::cout << "eDO is in state CALIBRATE.\nNo need to calibrate.\n";
-      break;
+      case 0:
+        std::cout << "eDO is in state INIT.\nLaunching calibration...\n";
+        calibrate(nh, false);
+        return true;          // OK to continue
     
-    case 3:
-      std::cout << "eDO is in state MOVE.\nIs the tablet controller in use?\n";
-      break;
+      case 1:
+        std::cout << "eDO is in state NOT_CALIBRATE.\n"
+                  << "Launching calibration...\n";
+        calibrate(nh, false);
+        return true;          // OK to continue
 
-    case 4:
-      std::cout << "eDO is in state JOG.\nIs the tablet controller in use?\n";
-      break;
- 
-    case 5:
-      std::cout << "eDO is in state MACHINE_ERROR.\nRestart reccommended.\n";
-      break;
-    
-    case 6:
-      std::cout << "eDO is in state BRAKED.\n";
-      break;
+      case 2:
+        std::cout << "eDO is in state CALIBRATE.\nNo need to calibrate.\n";
+        return true;          // OK to continue
+      
+      case 3:
+        std::cout << "eDO is in state MOVE.\nIs the tablet controller in use?\n"
+                  << "Fetch new state? Enter y/n: ";
+        std::cin >> option;
+        if(option != 'y'){
+          return false;       // Exit
+        }
+        break;                // Check state again
 
-    case 255:
-      std::cout << "eDO is in state COMMAND_STATE.\n";
-      break;
+      case 4:
+        std::cout << "eDO is in state JOG.\nIs the tablet controller in use?\n"
+                  << "Fetch new state? Enter y/n: ";
+        std::cin >> option;
+        if(option != 'y'){
+          return false;       // Exit
+        }
+        break;                // Check state again
+   
+      case 5:
+        std::cout << "eDO is in state MACHINE_ERROR.\nRestart reccommended.\n"
+                  << "Terminating edo_manual_ctrl";
+        return false;         // Exit
+      
+      case 6:
+        std::cout << "eDO is in state BRAKED.\nRestart reccommended.\n"
+                  << "Terminating edo_manual_ctrl";
+        return false;
 
-    default:
-      std::cout << "eDO is in an unknown state.\nRestart recommended.\n";
-      break;
+      case 255:
+        std::cout << "eDO is in state COMMAND_STATE.\n"
+                  << "Fetch new state? Enter y/n: ";
+        std::cin >> option;
+        if(option != 'y'){
+          return false;       // Exit
+        }
+        break;                // Check state again
 
-  }  //switch(state)
+      default:
+        std::cout << "eDO is in an unknown state.\nRestart recommended.\n"
+                  << "Terminating edo_manual_ctrl";
+        return false;
+
+    }  // switch(state)
+  } while(option == 'y');
 
 }  // initialStartup()
 
 int main(int argc, char **argv){
-
-  bool cursesActive = false;
-
+  
+  // Initialize "edo_manual_ctrl" ROS node and NodeHandle for Publishers and
+  // Subscribers
   ros::init(argc, argv, "edo_manual_ctrl");
-
   ros::NodeHandle nh;
 
-  std::cout << std::fixed;
-  std::cout << std::setprecision(2);
+  std::cout << std::fixed;                // Set precision of decimals to 
+  std::cout << std::setprecision(2);      // 2 decimal places for output
 
-  initialStartup(nh);
-    
-  /*
-  TODO for Initial Calibration
-    - If in error state, should restrict access to move/jog
-      commands and provide useful output (and maybe quit node)
-    - If in init state, should force full calibration including
-      init, reset, and calibrate
-    - Find a way to force the user to pause between sending
-      init command and reset command (and maybe jog/calibrate commands)
-  */
+  // Create/run initial startup to check e.DO state and calibrate if necessary
+  // If bad state, exit and return -1
+  if(!initialStartup(nh)){
+    return -1;
+  }
   
   int choice = 0;
 
@@ -527,11 +607,12 @@ int main(int argc, char **argv){
     case 3:
       calibrate(nh, true);
       break;
+
     case 4:
       getData(nh);
       break;
  
-    } //switch(choice)
+    } // switch(choice)
   } while(choice != -1);
 
   return 0;

@@ -1,6 +1,6 @@
 /** @file MovementCommandQueue.h
  *  @brief Class definition for MovementCommandQueue
- *  @author Ashwini Magar, Jack Shelata, Alessandro Piscioneri
+ *  @author Jack Shelata
  *  @date May 28, 2018
  */
 #ifndef __MOVEMENT_COMMAND_QUEUE_H__
@@ -15,8 +15,8 @@
 /** @brief Struct to hold information in the MovementCommandQueue class object
  */ 
 struct MovementCommandQueueItem {
-  edo_core_msgs::MovementCommand message;
-  edo_core_msgs::MovementFeedback status;
+  edo_core_msgs::MovementCommand message;   // MovementCommand to execute
+  edo_core_msgs::MovementFeedback status;   // MovementFeedback to store
 };
 
 /***************************************************************

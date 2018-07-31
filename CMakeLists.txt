@@ -200,5 +200,5 @@ include_directories(
 add_executable(edo_manual_ctrl src/edo_manual_ctrl.cpp 
   src/MovementCommandQueue.cpp
   src/DataDisplay.cpp
-  src/InitialCheck.cpp)
+  src/StateChecker.cpp)
 target_link_libraries(edo_manual_ctrl ${catkin_LIBRARIES} ${CURSES_LIBRARIES} )

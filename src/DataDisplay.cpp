@@ -1,7 +1,7 @@
 /** @file DataDisplay.cpp
  *  @brief Class implementation for DataDisplay. Used to get cartesian, joint,
  *  and machine state data from e.DO.
- *  @author Ashwini Magar, Jack Shelata, Alessandro Piscioneri
+ *  @author Jack Shelata
  *  @date May 28, 2018
  */
 
