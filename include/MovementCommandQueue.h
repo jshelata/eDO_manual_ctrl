@@ -49,14 +49,14 @@ public:
 
 private:
 
-  ros::NodeHandle nh;	                                        // ROS node handle
+  ros::NodeHandle nh;                                         // ROS node handle
   std::queue<MovementCommandQueueItem> pendingQueue;          // Pending msg q
   std::queue<MovementCommandQueueItem> waitingReceiveQueue;   // Received msg q
   std::queue<MovementCommandQueueItem> waitingExecutedQueue;  // Executed msg q
   ros::Subscriber move_ack_sub;                               // 
-  ros::Publisher move_ctrl_pub;	                              //
+  ros::Publisher move_ctrl_pub;                               // 
   edo_core_msgs::MovementCommand resetCommand;                // Reset Command
-	
+  
 };
 
 

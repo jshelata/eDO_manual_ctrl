@@ -20,13 +20,18 @@
 class StateChecker {
   
 public:
-
+  // Cunstruct StateChecker object. Constructor creates and initializes ROS
+  // Subscriber to check the e.DO's Machine State
   StateChecker(ros::NodeHandle& nh_in);
 
+  // Callback function to get and save state number from "/machine_state"
+  // ROS topic
   void stateCallback(const edo_core_msgs::MachineState& state);
 
+  // Getter member function to return the saved machine state number
   int getState();
-
+  
+  // Getter member function to return the stateReceived bool
   bool getStateReceived();
 
 private:
