@@ -1,3 +1,4 @@
+![e.DO and Jetson TX2](http://docs/images/eDOandJetson.JPG)
 # e.DO Manual Control
 
 This ROS package can be used to control the COMAU e.DO educational robot. It provides the ability to initialize, calibrate, and operate the e.DO from the Linux terminal without the use of the Android tablet application. The program supports jog and move commands and can output data from the e.DO to the terminal. It can be helpful in understanding how the e.DO Robot can be controlled by any ROS compatible program.
