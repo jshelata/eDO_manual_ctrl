@@ -20,7 +20,7 @@ Clone/save directory into src folder
 
 ```
 cd catkin_ws/src/
-git clone https://github.com/jshelata/edo_manual_ctrl.git
+git clone https://github.com/jshelata/eDO_manual_ctrl.git
 ```
 
 Build the package
@@ -65,7 +65,7 @@ Next, you'll need to edit the "ministarter" file in the home directory. Change t
 
 * [Ncurses](https://www.cyberciti.biz/faq/linux-install-ncurses-library-headers-on-debian-ubuntu-centos-fedora/) - Used for asynchronous jog control
 * [ROS Kinetic](http://wiki.ros.org/kinetic.Installation)
-* [eDO_core_msgs](https://github.com/Comau/eDO_core_msgs) - Rename to "edo_core_msgs" to build successfully
+* [eDO_core_msgs](https://github.com/Comau/eDO_core_msgs) - Must be cloned in catkin_ws/src/
 * C++11 - Used to sleep to give time for e.DO to process commands
 
 
