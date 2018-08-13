@@ -3,17 +3,18 @@ project(edo_manual_ctrl)
 
 
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy edo_core_msgs)
-find_package(Curses REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy  message_generation edo_core_msgs std_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+# Find the Ncurses library for button jog control
+find_package(Curses REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -38,17 +39,18 @@ find_package(Curses REQUIRED)
 ##   * add "message_generation" and every package in MSG_DEP_SET to
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     natkin_package(CATKIN_DEPENDS ...)
+##     catkin_package(CATKIN_DEPENDS ...)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-#add_message_files(
-#    FILES
-#    MovementCommand.msg
-#)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,8 +69,8 @@ find_package(Curses REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
-#   std_msgs
    edo_core_msgs
+   std_msgs
 )
 
 ################################################
@@ -103,7 +105,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES edo_manual_ctrl
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS message_runtime edo_core_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -120,19 +122,32 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/edo_manual_ctrl.cpp
-# )
+#  add_library(${PROJECT_NAME}
+#    src/${PROJECT_NAME}/edo_manual_ctrl.cpp
+#  )
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/edo_manual_ctrl_node.cpp)
+add_executable(edo_manual_ctrl src/edo_manual_ctrl.cpp 
+  src/DataDisplay.cpp
+  src/MovementCommandQueue.cpp
+  src/StateChecker.cpp
+)
+
+## Test relay node for live e.DO movement from simulation (IGNORE)
+#add_executable(temp_node src/temp_node.cpp
+#  src/Relay.cpp
+#  src/MovementCommandQueue.cpp
+#  src/StateChecker.cpp
+#)  
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -142,12 +157,20 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Test relay node for live e.DO movement from simulation (IGNORE)
+#add_dependencies(temp_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(edo_manual_ctrl ${catkin_LIBRARIES} ${CURSES_LIBRARIES})
+
+## Test relay node for live e.DO movement from simulation (IGNORE)
+#target_link_libraries(temp_node ${catkin_LIBRARIES} )
 
 #############
 ## Install ##
@@ -197,8 +220,3 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(edo_manual_ctrl src/edo_manual_ctrl.cpp 
-  src/MovementCommandQueue.cpp
-  src/DataDisplay.cpp
-  src/StateChecker.cpp)
-target_link_libraries(edo_manual_ctrl ${catkin_LIBRARIES} ${CURSES_LIBRARIES} )
